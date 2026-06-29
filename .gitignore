@@ -25,4 +25,4 @@ venv/
 #ide
 .vscode/
 .idea/
-
+requirements.txt
