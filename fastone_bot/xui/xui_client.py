@@ -63,7 +63,6 @@ class XUIClient:
         await self.session.close()
 
     async def get_subs(self):
-        print(self.base_url)
         return await self.request("GET", "/panel/api/inbounds/list")
         
     async def find_subs_by_uuids(self, uuids: list[str]):
@@ -200,8 +199,7 @@ class XUIClient:
                 "subId": client.get("subId")
             }
 
-            r = await self.update_client(client["inboundId"], updated, uuid)
-            print(r)
+            await self.update_client(client["inboundId"], updated, uuid)
 
     async def find_subs_by_subId(self, subId):
         data = await self.get_subs()

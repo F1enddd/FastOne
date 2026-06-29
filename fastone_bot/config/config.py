@@ -15,4 +15,5 @@ class Settings:
     
     BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 
+
 settings = Settings()

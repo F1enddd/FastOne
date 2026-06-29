@@ -58,8 +58,6 @@ async def get_payment(payment_id):
 async def create_subscription(user_id, uuid, email, months):
     async with async_session() as session:
         expity = int((datetime.now(timezone.utc) + timedelta(days=30 * months)).timestamp() * 1000)
-        print(months)
-        print(expity)
         subscription = Subscriptions(
             User_ID = user_id,
             Subscription_UUID = uuid,
