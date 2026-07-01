@@ -15,11 +15,13 @@ async def yookassa_webhook(request: Request):
     payload = await request.json()
 
     print("CALLBACK YOOKASSA")
-    print(payload)
+    
     
     if payload.get("event") != "payment.succeeded":
         return {"status":"ignored"}
-
+    
+    print(f'Оплата подписки FastOne сумма:{payload["object"]["amount"]["value"]}')
+    
     obj = payload["object"]
 
     payment_id = int(obj["metadata"]["payment_id"])
