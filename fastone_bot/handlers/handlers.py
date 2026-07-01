@@ -388,7 +388,7 @@ async def buy_month_subs(callback: CallbackQuery, state: FSMContext):
 @router.message(NewSub.name)
 async def get_sub_name(message: Message, state: FSMContext):
     if not message or not message.text or len(message.text) < 3:
-        await message.answer(text='Название неверное или слишком короткое')
+        await message.answer(text='Название неверное или слишком короткое, придумайте другое')
         return
     sub_name = message.text
     await state.update_data(sub_name=sub_name)
