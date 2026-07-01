@@ -379,7 +379,7 @@ async def buy_month_subs(callback: CallbackQuery, state: FSMContext):
     
     await state.set_state(NewSub.name)
 
-    await callback.message.edit_text("Введите название подписки: ")
+    await callback.message.edit_text("Придумайте название подписки: ")
 
     
 
