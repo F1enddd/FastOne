@@ -5,8 +5,7 @@ load_dotenv()
 
 class Settings:
     BASE_URL = os.getenv("XUI_BASE_URL")
-    USERNAME = os.getenv("XUI_USERNAME")
-    PASSWORD = os.getenv("XUI_PASSWORD")
+    API_TOKEN = os.getenv("XUI_API_TOKEN")
 
     SHOP_ID = os.getenv("YOOKASSA_SHOP_ID")
     SECRET_KEY = os.getenv("YOOKASSA_SECRET_KEY")

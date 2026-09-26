@@ -6,57 +6,43 @@ import json
 
 
 class XUIClient:
-    def __init__(self, base_url, username, password):
+    def __init__(self, base_url, api_token):
         self.base_url = base_url
-        self.username = username
-        self.password = password
+        self.api_token = api_token
         self.session = None
-
-    async def login(self):
-        async with self.session.post(
-            f"{self.base_url}/login",
-            data={
-                "username": self.username,
-                "password": self.password
-            }
-        ) as resp:
-            text = await resp.text()
-            print("LOGIN:", resp.status, text)
     
     async def request(self, method, path, **kwargs):
         url = f"{self.base_url}{path}"
 
-        for attempt in range(2):
-            if self.session is None:
-                await self.start()
+        if self.session is None:
+            await self.start()
 
-            async with self.session.request(method, url, **kwargs) as resp:
-                text = await resp.text()
+        async with self.session.request(method, url, **kwargs) as resp:
+            text = await resp.text()
+                
 
-                if resp.status in (401, 403, 404) and attempt == 0:
-                    await self.login()
-                    continue
+            if resp.status >= 400:
+                raise Exception(
+                    f"XUI HTTP {resp.status}: {text[:500]}"
+                )
 
-                if resp.status >= 400:
-                    raise Exception(
-                        f"XUI HTTP {resp.status}: {text[:500]}"
-                    )
-
-                try:
-                    return json.loads(text)
-                except Exception:
-                    raise Exception(
-                        f"XUI returned non-json: {text[:500]}"
-                    )
+            try:
+                return json.loads(text)
+            except Exception:
+                raise Exception(
+                    f"XUI returned non-json: {text[:500]}"
+                )
 
         raise Exception("Request failed after re-login")
 
 
     async def start(self):
-        jar = aiohttp.CookieJar(unsafe=True)
-        self.session = aiohttp.ClientSession(cookie_jar=jar)
+        self.session = aiohttp.ClientSession(
+            headers={
+                "Authorization": f"Bearer {self.api_token}"
+            }
+        )
 
-        await self.login()
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
