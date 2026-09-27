@@ -93,33 +93,24 @@ class XUIClient:
         return False
     
 
-    async def add_client(self, inbound_id, client: dict):
+    async def add_client(self, inbound_ids: list[int], client: dict):
         payload = {
-            "id": inbound_id,
-            "settings": json.dumps({
-                "clients": [client]
-            })
+            "client": client,
+            "inboundIds": inbound_ids
         }
 
         return await self.request(
             "POST",
-            "/panel/api/inbounds/add",
+            "/panel/api/clients/add",
             json=payload
         )
 
 
-    async def update_client(self, inbound_id: int, client: dict, uuid):
-        payload = {
-            "id": inbound_id,
-            "settings": json.dumps({
-                "clients": [client]
-            })
-        }
-
+    async def update_client(self, email: str, client: dict):
         return await self.request(
             "POST",
-            f"/panel/api/inbounds/update/{uuid}",
-            json=payload
+            f"/panel/api/clients/update/{email}",
+            json=client
         )
     
     async def create_subscription(self, username: str, months: int):
@@ -131,29 +122,18 @@ class XUIClient:
 
         subscription_id = str(uuid_lib.uuid4())
 
-        base_client = {
+        client = {
             "id": user_uuid,
             "enable": True,
             "expiryTime": expire_time,
             "flow": "",
-            "subId": subscription_id
+            "subId": subscription_id,
+            "email": username
         }
 
-        client_1 = {
-            **base_client,
-            "email": f'{username} - #1'
-        }
-        
-        client_2 = {
-            **base_client,
-            "email": f'{username} - #2'
-        }
+        result = await self.add_client([1, 2], client)
 
-        r1 = await self.add_client(1, client_1)
-        print("ADD1", r1)
-        r2 = await self.add_client(2, client_2)
-        print("ADD2", r2)
-
+        print("ADD CLIENT:", result)
 
         return {
             "uuid": user_uuid,
@@ -165,27 +145,46 @@ class XUIClient:
         data = await self.find_subs_by_uuids([uuid])
         clients = data.get(uuid, {}).get("clients", [])
 
-        cur_expire = max(c.get("expiryTime", 0) for c in clients)
+        if not clients:
+            raise Exception(f"Client not found: {uuid}")
 
-        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+        cur_expire = max(
+            c.get("expiryTime", 0)
+            for c in clients
+        )
+
+        now_ms = int(
+            datetime.now(timezone.utc).timestamp() * 1000
+        )
 
         base_time = max(cur_expire, now_ms)
 
-        add_ms = int(timedelta(days=30 * months).total_seconds() * 1000)
+        add_ms = int(
+            timedelta(days=30 * months).total_seconds() * 1000
+        )
 
         expire_time = base_time + add_ms
 
-        for client in clients:
-            updated = {
-                "id": uuid,
-                "email": client["email"],
-                "enable": True,
-                "expiryTime": expire_time,
-                "flow": "",
-                "subId": client.get("subId")
-            }
 
-            await self.update_client(client["inboundId"], updated, uuid)
+        client = clients[0]
+
+        updated = {
+            "id": uuid,
+            "email": client["email"],
+            "enable": True,
+            "expiryTime": expire_time,
+            "flow": client.get("flow", ""),
+            "subId": client.get("subId"),
+        }
+
+        result = await self.update_client(
+            client["email"],
+            updated
+        )
+
+        print("UPDATE CLIENT:", result)
+
+        return expire_time
 
     async def find_subs_by_subId(self, subId):
         data = await self.get_subs()
