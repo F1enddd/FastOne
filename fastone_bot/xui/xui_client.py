@@ -103,7 +103,7 @@ class XUIClient:
 
         return await self.request(
             "POST",
-            "/panel/api/inbounds/addClient",
+            "/panel/api/inbounds/add",
             json=payload
         )
 
@@ -118,7 +118,7 @@ class XUIClient:
 
         return await self.request(
             "POST",
-            f"/panel/api/inbounds/updateClient/{uuid}",
+            f"/panel/api/inbounds/update/{uuid}",
             json=payload
         )
     
